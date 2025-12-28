@@ -97,7 +97,7 @@ This section is for developers who want to build from source.
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/SpeedMeter.git
+git clone https://github.com/imgolamrabbani/SpeedMeter.git
 cd SpeedMeter
 
 # Build and run
