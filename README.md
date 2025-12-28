@@ -6,7 +6,63 @@ A native macOS menu bar application that monitors network speed and tracks data 
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+## 📥 Download & Installation
+
+### Quick Install (Recommended)
+
+1. **Download the latest release:**
+   - Go to [Releases](../../releases)
+   - Download `SpeedMeter-1.0.0.dmg`
+
+2. **Install the app:**
+   - Open the downloaded DMG file
+   - Drag **SpeedMeter.app** to the **Applications** folder
+   - Eject the DMG
+
+3. **Launch SpeedMeter:**
+   - Open SpeedMeter from your Applications folder
+   - The app will appear in your menu bar (top-right corner)
+
+> **First Launch Note:** macOS may show a security warning because the app is not notarized. See [Security & Privacy](#security--privacy) below.
+
+### Alternative: Direct App Download
+
+If you prefer not to use a DMG:
+- Download `SpeedMeter.app.zip` from [Releases](../../releases)
+- Unzip and move to Applications folder
+- Launch from Applications
+
+### Security & Privacy
+
+**If macOS blocks the app on first launch:**
+
+1. **Option 1: System Settings (Recommended)**
+   - Go to **System Settings** → **Privacy & Security**
+   - Scroll down to find SpeedMeter in the security section
+   - Click **"Open Anyway"**
+
+2. **Option 2: Right-click Method**
+   - Right-click **SpeedMeter.app** in Applications
+   - Select **"Open"**
+   - Click **"Open"** in the warning dialog
+
+3. **Option 3: Terminal Command**
+   ```bash
+   xattr -d com.apple.quarantine /Applications/SpeedMeter.app
+   ```
+
+**Why this happens:** The app is not code-signed or notarized with an Apple Developer account. It's completely safe and open source - you can review all the code in this repository.
+
+### System Requirements
+
+- **macOS**: 14.0 (Sonoma) or later
+- **Hardware**: Apple Silicon Mac (M1/M2/M3/M4)
+- **Network**: Active internet connection
+
+---
+
 ## Features
+
 
 ### 🚀 Real-Time Speed Monitoring
 - **Live Speed Display**: Download and upload speeds shown directly in the menu bar
@@ -31,74 +87,49 @@ A native macOS menu bar application that monitors network speed and tracks data 
 - **Customization**: Adjust update intervals
 - **Menu Bar Only**: Runs entirely in the menu bar (no dock icon)
 
-## Installation
+## Installation for Developers
 
-### Build from Source
+> **Note:** If you just want to use the app, see [Download & Installation](#-download--installation) above.
 
-1. **Clone or navigate to the project directory:**
-   ```bash
-   cd "/Users/mdgolamrabbani/My MacOS Apps/SpeedMeter"
-   ```
+This section is for developers who want to build from source.
 
-2. **Build the project:**
-   ```bash
-   swift build -c release
-   ```
-
-3. **Run the application:**
-   ```bash
-   .build/release/SpeedMeter
-   ```
-
-### Create App Bundle (Optional)
-
-To create a proper macOS app bundle:
+### Quick Build
 
 ```bash
-# Build release version
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/SpeedMeter.git
+cd SpeedMeter
+
+# Build and run
+./build-release.sh
+
+# Or build manually
 swift build -c release
-
-# Create app bundle structure
-mkdir -p SpeedMeter.app/Contents/MacOS
-mkdir -p SpeedMeter.app/Contents/Resources
-
-# Copy executable
-cp .build/release/SpeedMeter SpeedMeter.app/Contents/MacOS/
-
-# Create Info.plist
-cat > SpeedMeter.app/Contents/Info.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleExecutable</key>
-    <string>SpeedMeter</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.speedmeter.app</string>
-    <key>CFBundleName</key>
-    <string>SpeedMeter</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>14.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2025. All rights reserved.</string>
-</dict>
-</plist>
-EOF
-
-# Make executable
-chmod +x SpeedMeter.app/Contents/MacOS/SpeedMeter
-
-# Copy to Applications (optional)
-# cp -r SpeedMeter.app /Applications/
+.build/release/SpeedMeter
 ```
+
+### Create Release Build
+
+Use the provided build script to create a production app bundle with icon:
+
+```bash
+./build-release.sh
+```
+
+This will:
+- Build the release binary (ARM64)
+- Create proper app bundle structure
+- Convert icon to .icns format
+- Generate Info.plist
+- Create `SpeedMeter.app` ready for distribution
+
+### Create DMG Installer
+
+```bash
+./create-dmg.sh
+```
+
+Creates `SpeedMeter-1.0.0.dmg` for distribution.
 
 ## Usage
 
@@ -135,52 +166,13 @@ Configure SpeedMeter to your liking:
 - **Launch at Login**: Enable automatic startup with macOS
 - **Update Interval**: Adjust how often speeds are measured (0.5-5 seconds)
 
-## Requirements
-
-- **macOS**: 14.0 (Sonoma) or later
-- **Apple Silicon**: M1/M2/M3/M4 Mac (native ARM64)
-- **Swift**: 6.2+ (for building from source)
-
-## How It Works
-
-### Network Monitoring
-
-SpeedMeter uses macOS system APIs to monitor network interfaces:
-- **NWPathMonitor**: Detects network connectivity and interface types
-- **sysctl**: Reads network interface statistics directly from the kernel
-- **Real-time calculation**: Computes speed by measuring byte deltas over time
-
-### Data Persistence
-
-All usage data is stored using UserDefaults:
-- Hourly snapshots are accumulated
-- Automatic period rollovers (daily, weekly, monthly, yearly)
-- Data survives app restarts and system reboots
-
-### Privacy
-
-SpeedMeter runs entirely locally on your Mac:
-- No data is transmitted to external servers
-- No telemetry or analytics
-- All statistics remain on your device
-
-## Architecture
-
-```
-SpeedMeter/
-├── Services/
-│   ├── NetworkMonitor.swift    # Real-time speed monitoring
-│   ├── DataTracker.swift        # Usage persistence & aggregation
-│   └── StartupManager.swift     # Launch at login functionality
-├── Models/
-│   └── NetworkStats.swift       # Data structures
-├── Views/
-│   ├── DashboardView.swift      # Main statistics window
-│   └── SettingsView.swift       # Preferences panel
-└── AppDelegate.swift            # Menu bar integration
-```
+---
 
 ## Troubleshooting
+
+### App won't open / Security warning
+
+See the detailed [Security & Privacy](#security--privacy) section above for multiple solutions.
 
 ### App doesn't show in menu bar
 
